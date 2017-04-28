@@ -60,6 +60,7 @@
         <dependency>
             <groupId>com.entertainment</groupId>
             <artifactId>nifi-propertiesfile-controller-api</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.sshd</groupId>
