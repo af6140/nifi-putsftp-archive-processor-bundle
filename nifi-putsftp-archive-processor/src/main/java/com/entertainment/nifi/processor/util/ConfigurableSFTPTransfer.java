@@ -59,6 +59,7 @@ public class ConfigurableSFTPTransfer implements FileTransfer {
             .name("Port")
             .description("The port that the remote system is listening on for file transfers")
             .addValidator(StandardValidators.PORT_VALIDATOR)
+            .expressionLanguageSupported(true)
             .required(true)
             .defaultValue("22")
             .build();
@@ -402,7 +403,7 @@ public class ConfigurableSFTPTransfer implements FileTransfer {
         try {
             final Session session = jsch.getSession(ctx.getProperty(USERNAME).evaluateAttributeExpressions(flowFile).getValue(),
                     ctx.getProperty(HOSTNAME).evaluateAttributeExpressions(flowFile).getValue(),
-                    ctx.getProperty(PORT).evaluateAttributeExpressions(flowFile).asInteger().intValue());
+                    ctx.getProperty(PORT).evaluateAttributeExpressions(flowFile).asInteger());
 
             final String hostKeyVal = ctx.getProperty(HOST_KEY_FILE).getValue();
             if (hostKeyVal != null) {
