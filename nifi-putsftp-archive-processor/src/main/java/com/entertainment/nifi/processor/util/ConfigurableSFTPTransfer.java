@@ -438,8 +438,8 @@ public class ConfigurableSFTPTransfer implements FileTransfer {
                 String scope = ctx.getProperty(CONFIG_SCOPE).getValue();
                 if(scope !=null) {
                     PropertiesFileService fileService = ctx.getProperty(PROPERTIES_FILE_SERVICE).asControllerService(PropertiesFileService.class);
-
                     String passwordFromConfig = fileService.getProperty(scope, "password");
+                    logger.info("Found password from scope: "+scope);
                     session.setPassword(passwordFromConfig);
                 }
             }
