@@ -38,13 +38,13 @@
             <dependency>
                 <groupId>com.entertainment</groupId>
                 <artifactId>nifi-propertiesfile-controller-api</artifactId>
-                <version>1.0.0-SNAPSHOT</version>
+                <version>1.2.0-SNAPSHOT</version>
                 <type>jar</type>
             </dependency>
             <dependency>
                 <groupId>com.entertainment</groupId>
                 <artifactId>nifi-propertiesfile-controller-api-nar</artifactId>
-                <version>1.0.0-SNAPSHOT</version>
+                <version>1.2.0-SNAPSHOT</version>
                 <type>nar</type>
             </dependency>
             <dependency>
