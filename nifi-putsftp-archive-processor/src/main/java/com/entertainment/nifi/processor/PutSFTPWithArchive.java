@@ -4,9 +4,13 @@ import com.entertainment.nifi.processor.util.ConfigurableSFTPTransfer;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.components.PropertyDescriptor;
+import org.apache.nifi.flowfile.FlowFile;
+import org.apache.nifi.logging.ComponentLog;
 import org.apache.nifi.processor.ProcessContext;
+import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.ProcessorInitializationContext;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -65,42 +69,17 @@ public class PutSFTPWithArchive extends PutFileTransfer<ConfigurableSFTPTransfer
         return properties;
     }
 
-    
-//    @Override
-//    protected void beforePut(final FlowFile flowFile, final ProcessContext context, final ConfigurableSFTPTransfer transfer) throws IOException {
-//        final ComponentLog logger = getLogger();
-//        final String rootPath = context.getProperty(FileTransfer.REMOTE_PATH).evaluateAttributeExpressions(flowFile).getValue();
-//        final String workingDirPath;
-//        if (rootPath == null) {
-//            workingDirPath = null;
-//        } else {
-//            File workingDirectory = new File(rootPath);
-//            if (!workingDirectory.getPath().startsWith("/") && !workingDirectory.getPath().startsWith("\\")) {
-//                workingDirectory = new File(transfer.getHomeDirectory(flowFile), workingDirectory.getPath());
-//            }
-//            workingDirPath = workingDirectory.getPath().replace("\\", "/");
-//        }
-//        logger.debug("Setting workingDirPath to {}", new Object[]{workingDirPath});
-//
-//        final String fileName = flowFile.getAttribute(CoreAttributes.FILENAME.key());
-//
-//        PropertyValue rotateCountValue = context.getProperty(ConfigurableSFTPTransfer.ROTATE_COUNT);
-//        int count=0;
-//        if(rotateCountValue!=null) {
-//            try {
-//                count =Integer.parseInt(context.getProperty(ConfigurableSFTPTransfer.ROTATE_COUNT).getValue());
-//            }catch(Exception e){
-//                logger.debug("Cannot prase integer from {}", new Object[]{e.getMessage()});
-//            }
-//
-//        }
-//        logger.debug("Setting rotateCount to {}", new Object[]{count});
-//        //explicitly initialize sftp channel
-//        transfer.getHomeDirectory(flowFile);
-//        archiveFile(transfer,workingDirPath, fileName, count);
-//        logger.info("End of beforePut");
-//    }
-    
+
+    @Override
+    protected void beforePut(final FlowFile flowFile, final ProcessContext context, final ConfigurableSFTPTransfer transfer) throws IOException {
+        final ComponentLog logger = getLogger();
+
+        //explicitly initialize sftp channel
+        // initialize channel, so scope can be populate etc
+        transfer.init_channel(flowFile);
+        logger.info("End of beforePut");
+    }
+
 //    private  void archiveFile(final ConfigurableSFTPTransfer transfer, final String path, final String remoteFileName, int keepCount) throws IOException {
 //       final ComponentLog logger = getLogger();
 //       logger.info("Archive remote file {} in {}", new Object[]{remoteFileName, path});

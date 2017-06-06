@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.entertainment.nifi.processor.util.ConfigurableSFTPTransfer;
+import com.entertainment.nifi.processor.util.MockPropertiesFileControllerService;
 import org.apache.nifi.util.MockFlowFile;
 import org.apache.nifi.util.TestRunner;
 import org.apache.nifi.util.TestRunners;
@@ -34,12 +35,24 @@ public class PutSFTPWithArchiveTest {
             TestRunner runner = TestRunners.newTestRunner(new PutSFTPWithArchive());
 
             // Add properties
+            String scope="testScope";
+            MockPropertiesFileControllerService propService =new MockPropertiesFileControllerService();
+            Map scopeProperties =new HashMap<String,String>();
+            scopeProperties.put("password", "test");
+            propService.addPropertyMap(scope,scopeProperties);
+            runner.addControllerService(propService.getIdentifier(), propService);
+            runner.enableControllerService(propService);
+
             runner.setProperty(ConfigurableSFTPTransfer.ROTATE_COUNT, "4");
             runner.setProperty("Hostname", "localhost");
             runner.setProperty("Port", "2322");
             runner.setProperty("Username", userName);
-            runner.setProperty("Password", "test");
+            //runner.setProperty("Password", "test");
             runner.setValidateExpressionUsage(false);
+            runner.setProperty(ConfigurableSFTPTransfer.CONFIG_SCOPE, scope);
+            runner.setProperty(ConfigurableSFTPTransfer.PROPERTIES_FILE_SERVICE, propService.getIdentifier());
+
+
             // Add the content to the runner
             MockFlowFile inputFlowFile = runner.enqueue("target/test-classes/test.xml");
             Map fileAttributes = new HashMap<String, String>();
@@ -50,7 +63,8 @@ public class PutSFTPWithArchiveTest {
             System.out.println("flow file name: " + inputFlowFile.getAttribute("filename"));
 
             // Run the enqueued content, it also takes an int = number of contents queued
-            runner.run(1);
+
+            runner.run(1, true);
 
             // All results were processed with out failure
             runner.assertQueueEmpty();
@@ -67,6 +81,9 @@ public class PutSFTPWithArchiveTest {
             //result.assertContentEquals("nifi rocks");
 
             assertTrue(Files.exists(new File(vfsPath).toPath().resolve(userName+ FileSystems.getDefault().getSeparator()+"test.xml")));
+
+            runner.disableControllerService(propService);
+            runner.shutdown();
 
         }catch(Exception e){
             e.printStackTrace();

@@ -121,6 +121,8 @@ public class ConfigurableSFTPTransfer implements FileTransfer {
 
     private final boolean disableDirectoryListing;
 
+    private String scope;
+
     public ConfigurableSFTPTransfer(final ProcessContext processContext, final ComponentLog logger) {
         this.ctx = processContext;
         this.logger = logger;
@@ -185,7 +187,6 @@ public class ConfigurableSFTPTransfer implements FileTransfer {
             }
         }
 
-        final ChannelSftp sftp = getChannel(null);
         final boolean isPathMatch = pathFilterMatches;
 
         final List<ChannelSftp.LsEntry> subDirs = new ArrayList<>();
@@ -384,7 +385,16 @@ public class ConfigurableSFTPTransfer implements FileTransfer {
         }
     }
 
+    public void init_channel(final FlowFile flowFile) throws IOException {
+        logger.info("Initialize ftp channel");
+        this.getChannel(flowFile);
+    }
+
     protected ChannelSftp getChannel(final FlowFile flowFile) throws IOException {
+
+        if (flowFile ==null) {
+            throw new IOException("Input flow file is null");
+        }
         if (sftp != null) {
             String sessionhost = session.getHost();
             String desthost = ctx.getProperty(HOSTNAME).evaluateAttributeExpressions(flowFile).getValue();
@@ -471,6 +481,7 @@ public class ConfigurableSFTPTransfer implements FileTransfer {
 
     @Override
     public void close() throws IOException {
+        logger.info("####Closing sftp transfer object");
         if (closed) {
             return;
         }
@@ -624,7 +635,9 @@ public class ConfigurableSFTPTransfer implements FileTransfer {
     }
     @Override
     public void rename(final String source, final String target) throws IOException {
-        final ChannelSftp sftp = getChannel(null);
+        if(sftp==null) {
+            this.logger.error("SFTP channel not initialized properly");
+        }
         try {
             sftp.rename(source, target);
         } catch (final SftpException e) {
