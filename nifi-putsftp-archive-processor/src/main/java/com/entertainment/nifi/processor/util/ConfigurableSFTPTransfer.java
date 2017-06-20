@@ -33,6 +33,7 @@ public class ConfigurableSFTPTransfer implements FileTransfer {
             .name("Private Key Path")
             .description("The fully qualified path to the Private Key file")
             .required(false)
+            .expressionLanguageSupported(true)
             .addValidator(StandardValidators.FILE_EXISTS_VALIDATOR)
             .build();
     public static final PropertyDescriptor PRIVATE_KEY_PASSPHRASE = new PropertyDescriptor.Builder()
@@ -436,12 +437,12 @@ public class ConfigurableSFTPTransfer implements FileTransfer {
             session.setConfig(properties);
 
             final String privateKeyFile = ctx.getProperty(PRIVATE_KEY_PATH).evaluateAttributeExpressions(flowFile).getValue();
-            if (privateKeyFile != null) {
+            if (privateKeyFile != null && ! privateKeyFile.isEmpty()) {
                 jsch.addIdentity(privateKeyFile, ctx.getProperty(PRIVATE_KEY_PASSPHRASE).evaluateAttributeExpressions(flowFile).getValue());
             }
 
             final String password = ctx.getProperty(FileTransfer.PASSWORD).evaluateAttributeExpressions(flowFile).getValue();
-            if (password != null) {
+            if (password != null && ! password.isEmpty()) {
                 session.setPassword(password);
             }else {
                 //lookup password from properties file
