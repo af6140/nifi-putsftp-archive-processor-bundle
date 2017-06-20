@@ -438,20 +438,23 @@ public class ConfigurableSFTPTransfer implements FileTransfer {
 
             final String privateKeyFile = ctx.getProperty(PRIVATE_KEY_PATH).evaluateAttributeExpressions(flowFile).getValue();
             if (privateKeyFile != null && ! privateKeyFile.isEmpty()) {
+                if(this.logger.isDebugEnabled())  this.logger.debug("Using ssh key auth");
                 jsch.addIdentity(privateKeyFile, ctx.getProperty(PRIVATE_KEY_PASSPHRASE).evaluateAttributeExpressions(flowFile).getValue());
-            }
-
-            final String password = ctx.getProperty(FileTransfer.PASSWORD).evaluateAttributeExpressions(flowFile).getValue();
-            if (password != null && ! password.isEmpty()) {
-                session.setPassword(password);
-            }else {
-                //lookup password from properties file
-                String scope = ctx.getProperty(CONFIG_SCOPE).evaluateAttributeExpressions(flowFile).getValue();
-                if(scope !=null) {
-                    PropertiesFileService fileService = ctx.getProperty(PROPERTIES_FILE_SERVICE).asControllerService(PropertiesFileService.class);
-                    String passwordFromConfig = fileService.getProperty(scope, "password");
-                    logger.info("Found password from scope: "+scope);
-                    session.setPassword(passwordFromConfig);
+            } else {
+                // no key file specified, fall back to password
+                if(this.logger.isDebugEnabled())  this.logger.debug("Using ssh password auth");
+                final String password = ctx.getProperty(FileTransfer.PASSWORD).evaluateAttributeExpressions(flowFile).getValue();
+                if (password != null && !password.isEmpty()) {
+                    session.setPassword(password);
+                } else {
+                    //lookup password from properties file
+                    String scope = ctx.getProperty(CONFIG_SCOPE).evaluateAttributeExpressions(flowFile).getValue();
+                    if (scope != null) {
+                        PropertiesFileService fileService = ctx.getProperty(PROPERTIES_FILE_SERVICE).asControllerService(PropertiesFileService.class);
+                        String passwordFromConfig = fileService.getProperty(scope, "password");
+                        session.setPassword(passwordFromConfig);
+                        if(this.logger.isDebugEnabled())  this.logger.debug("Found password from scope: " + scope);
+                    }
                 }
             }
 
