@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DateFormat;
@@ -437,12 +438,13 @@ public class ConfigurableSFTPTransfer implements FileTransfer {
             session.setConfig(properties);
 
             final String privateKeyFile = ctx.getProperty(PRIVATE_KEY_PATH).evaluateAttributeExpressions(flowFile).getValue();
-            if (privateKeyFile != null && ! privateKeyFile.isEmpty()) {
+            boolean useKeyAuth = privateKeyFile != null && ! privateKeyFile.isEmpty() && Files.exists(new File(privateKeyFile).toPath());
+            if (useKeyAuth) {
                 if(this.logger.isDebugEnabled())  this.logger.debug("Using ssh key auth");
                 jsch.addIdentity(privateKeyFile, ctx.getProperty(PRIVATE_KEY_PASSPHRASE).evaluateAttributeExpressions(flowFile).getValue());
             } else {
                 // no key file specified, fall back to password
-                if(this.logger.isDebugEnabled())  this.logger.debug("Using ssh password auth");
+                if(this.logger.isDebugEnabled())  this.logger.debug("Using ssh password auth ,since keyfile not set or not found");
                 final String password = ctx.getProperty(FileTransfer.PASSWORD).evaluateAttributeExpressions(flowFile).getValue();
                 if (password != null && !password.isEmpty()) {
                     session.setPassword(password);
